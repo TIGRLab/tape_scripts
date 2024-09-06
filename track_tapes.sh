@@ -1,24 +1,32 @@
 #!/bin/bash
 
-tape=$1
-backup_tape=$2
-
 if [ $# -lt 2 ]
 then
-    echo "Usage: track_tapes.sh <tape_label> <backup_tape_label>"
-    echo "          e.g. track_tapes.sh KM0001 KM0002"
+    echo """
+This script takes the name of two tapes (a main tape and backup tape) and
+moves metadata (.ncdu and .sha512) files to the appropriate places
+to document where tar files have been stored on tape.
+
+This script reads from "user_files.txt" and "dataset_files.txt" files
+in TAPE_WORK_DIR (default: "$TAPE_WORK_DIR") to decide which files are to be
+documented and where. Files and symlinks will be stored in TAPE_TRACKING_DIR
+(default: "$TAPE_TRACKING_DIR").
+
+
+Usage:
+    track_tapes.sh <tape_label> <backup_tape_label>
+"""
     exit 2
 fi
 
-script_dir=/projects/dawn/sysadm-tools/tape_scripts
-tape_dir=/archive/new_tapes
-workdir=${tape_dir}/workspace
+tape=$1
+backup_tape=$2
 
-users=${script_dir}/user_files.txt
-datasets=${script_dir}/dataset_files.txt
+users=${TAPE_WORK_DIR}/user_files.txt
+datasets=${TAPE_WORK_DIR}/dataset_files.txt
 
-tape_out=${tape_dir}/tapes/${tape}
-backup_out=${tape_dir}/backup_tapes/${backup_tape}
+tape_out=${TAPE_TRACKING_DIR}/tapes/${tape}
+backup_out=${TAPE_TRACKING_DIR}/backup_tapes/${backup_tape}
 
 
 check_dir () {
@@ -41,7 +49,7 @@ get_id () {
     fstem=$1
     stem=$(drop_num $fstem)
     # Drop the date str
-    ident=${stem##*_}
+    ident=${stem#*_}
     echo $ident
 }
 
@@ -58,9 +66,9 @@ populate_folders () {
     while read fstem
     do
         # Move documentation files to tape dir
-        mv ${workdir}/${fstem}.{ncdu,sha512} ${tape_out}/
+        mv ${TAPE_WORK_DIR}/${fstem}.{ncdu,sha512} ${tape_out}/
 
-        all_file=${workdir}/$(get_summary_file ${fstem})
+        all_file=${TAPE_WORK_DIR}/$(get_summary_file ${fstem})
         if [ -e ${all_file} ]
         then
             mv ${all_file} ${tape_out}/
@@ -68,7 +76,7 @@ populate_folders () {
 
         # Make symlinks in user or dataset folder
         ident=$(get_id ${fstem})
-        out=${tape_dir}/${type}/${ident}
+        out=${TAPE_TRACKING_DIR}/${type}/${ident}
         check_dir ${out}
         cd ${out}
 

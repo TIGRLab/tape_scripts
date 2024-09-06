@@ -1,18 +1,21 @@
 #!/bin/bash
 
-scripts=/projects/dawn/sysadm-tools/tape_scripts
+if [ $# -ne 0 ]
+then
+    echo """
+This script runs copy_data.sh on multiple user and dataset tar files. It
+expects to find a list of files to copy to tape in "user_files.txt" and
+"dataset_files.txt" files inside TAPE_WORK_DIR (default: "$TAPE_WORK_DIR").
 
-for fstem in `cat ${scripts}/user_files.txt ${scripts}/dataset_files.txt`
+
+Usage:
+    run_multiple.sh
+
+"""
+    exit 2
+fi
+
+for fstem in `cat ${TAPE_WORK_DIR}/user_files.txt ${TAPE_WORK_DIR}/dataset_files.txt`
 do
-    ${scripts}/copy_data.sh ${fstem}
+    ${TAPE_SCRIPTS}/copy_data.sh ${fstem}
 done
-
-#while read fstem
-#do
-#    ${scripts}/copy_data.sh ${fstem}
-#done < ${scripts}/user_files.txt
-
-#while read fstem
-#do
-#    ${scripts}/copy_data.sh ${fstem}
-#done < ${scripts}/dataset_files.txt
