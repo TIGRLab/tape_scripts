@@ -29,8 +29,9 @@ out_dir=$2
 
 cd ${in_dir}
 
-# Remove quotations from file names
-find . -name "*'*" -exec bash -c $'for f; do mv "$f" "${f//\\\047/}"; done' _ {} +
+
+# Remove quotations and spaces from file names
+find . '(' -name "*\"*" -o -name "*\'*" -o -name "* *" ')' -exec bash -c $'for f; do echo "Fixing malformed file name ${f}"; mv "$f" "${f//[\\\047\\\042\\\040]/}"; done' _ {} +
 
 # Set the destination path for output files
 fname=$(basename $in_dir)
