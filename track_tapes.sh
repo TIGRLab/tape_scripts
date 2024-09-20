@@ -12,6 +12,10 @@ in TAPE_WORK_DIR (default: "$TAPE_WORK_DIR") to decide which files are to be
 documented and where. Files and symlinks will be stored in TAPE_TRACKING_DIR
 (default: "$TAPE_TRACKING_DIR").
 
+This script will also ensure all files are owned by TAPE_USER
+(default: "$TAPE_USER") and TAPE_GROUP (default: "$TAPE_GROUP") and if
+USE_GIT (default: "$USE_GIT") is set will commit all new files as TAPE_USER.
+
 
 Usage:
     track_tapes.sh <tape_label> <backup_tape_label>
@@ -35,6 +39,7 @@ check_dir () {
     then
         echo "Making directory ${cur_dir}"
         mkdir ${cur_dir}
+        chown ${TAPE_USER}:${TAPE_GROUP} ${cur_dir}
     fi
 }
 
@@ -65,6 +70,9 @@ populate_folders () {
 
     while read fstem
     do
+        # Set correct ownership of files
+        chown ${TAPE_USER}:${TAPE_GROUP} ${TAPE_WORK_DIR}/${fstem}.*
+
         # Move documentation files to tape dir
         mv ${TAPE_WORK_DIR}/${fstem}.{ncdu,sha512} ${tape_out}/
 
@@ -86,11 +94,13 @@ populate_folders () {
             if [ ! -e "${out}/$(basename $item)" ]
             then
                 ln -s ${item} ${out}
+                chown -R ${TAPE_USER}:${TAPE_GROUP} "${out}/$(basename $item)"
             fi
 
             if [ ! -e "${backup_out}/$(basename $item)" ]
             then
                 ln -s ${item} ${backup_out}
+                chown -R ${TAPE_USER}:${TAPE_GROUP} "${backup_out}/$(basename $item)"
             fi
         done
 
@@ -110,4 +120,11 @@ fi
 if [ -e ${datasets} ]
 then
     populate_folders ${datasets} "datasets"
+fi
+
+# Update git if in use
+if [[ -v USE_GIT ]]
+then
+    su ${TAPE_USER} -c "git add ${tape_out} ${backup_out} ${users} ${datasets}"
+    su ${TAPE_USER} -c "git commit -m Updating ${tape} ${backup_tape}"
 fi
