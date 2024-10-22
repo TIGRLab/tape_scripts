@@ -125,6 +125,6 @@ fi
 # Update git if in use
 if [[ -v USE_GIT ]]
 then
-    su ${TAPE_USER} -c "git add ${tape_out} ${backup_out} ${users} ${datasets}"
-    su ${TAPE_USER} -c "git commit -m Updating ${tape} ${backup_tape}"
+    su ${TAPE_USER} -c "git add ${tape_out} ${backup_out} ${TAPE_TRACKING_DIR}/users ${TAPE_TRACKING_DIR}/datasets"
+    su ${TAPE_USER} -c "git commit -m \"Updating tapes ${tape} ${backup_tape}\""
 fi
