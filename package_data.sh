@@ -27,6 +27,11 @@ fi
 in_dir=$1
 out_dir=$2
 
+# Ensure you have a full path, if user gave relative one
+cd ${out_dir}
+out_dir=$(pwd)
+
+# Change to input dir for packaging
 cd ${in_dir}
 
 
