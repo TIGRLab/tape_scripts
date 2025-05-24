@@ -9,7 +9,7 @@ expects to find a list of files to copy to tape in "user_files.txt" and
 
 
 Usage:
-    run_multiple.sh
+    archive_files.sh
 
 """
     exit 2
